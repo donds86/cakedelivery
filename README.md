@@ -74,3 +74,11 @@ O mesmo e-mail pode ser cadastrado no estabelecimento (`/`) e em uma revenda (`/
 
 A montagem inclui Tema logo após Recheios, com opções prontas, sem tema ou personalizado. O tema é salvo no pedido e enviado no WhatsApp; não altera automaticamente o preço. A navegação Voltar/Continuar e a finalização ficam após o resumo, no computador e no celular.
 
+
+## Temas e imagens de referência
+
+No painel da confeitaria, o menu **Temas** permite cadastrar, editar e excluir opções com nome, descrição e foto opcional. A lista é individual por empresa e atualiza a etapa Tema da loja. Personalizado permanece como opção livre. Excluir ou renomear um tema não altera o texto salvo em pedidos anteriores.
+
+O cliente pode anexar uma imagem opcional na etapa Tema: JPG, PNG ou WebP, até 2 MB, com prévia e remoção. Uma imagem também pode descrever um tema personalizado sem texto adicional. O backend valida formato, assinatura e tamanho. A referência é gravada em order_references, vinculada ao pedido e à empresa no PostgreSQL; não é salva no disco temporário do serviço Railway nem retornada na listagem de pedidos. Os detalhes do pedido carregam a imagem em um endpoint autenticado e autorizado pelo tenant. Permanece após reinício/deploy, junto aos demais dados do banco.
+
+Fotos de temas fazem parte do catálogo público. A imagem anexada pelo comprador pertence ao pedido privado. O WhatsApp recebe somente o texto indicando a existência de uma referência no sistema; o link wa.me não anexa arquivos automaticamente. Para enviar também na conversa, o cliente deve anexar a imagem manualmente. Não há nova variável de ambiente para este armazenamento, que usa DATABASE_URL já configurada. O limite total de atualização do catálogo continua em 8 MB.

@@ -36,3 +36,6 @@ Demonstrações criadas por `demo.created` são convertidas para licença perman
 
 ## Identidade por portal
 A unicidade do e-mail é aplicada por índices parciais: um para contas tenant e outro para contas admin/reseller. A autenticação inclui o papel correspondente ao portal na consulta. Assim, um e-mail pode representar uma conta de empresa e uma de revenda, com hashes e sessões independentes. A migração scoped-email-v1 preserva registros e sessões na conversão de bancos antigos; não mescla contas nem concede acesso adicional a empresas.
+
+## Referências visuais
+order_references armazena MIME e conteúdo base64 de até 2 MB por pedido, com chave estrangeira composta (order_id, tenant_id). /api/tenants/:tenant/orders/:order/reference (e a variante administrativa) autoriza a empresa antes de devolver o conteúdo; respostas são no-store. As listagens carregam apenas hasThemeImage, evitando transferir anexos em todos os pedidos. Apenas JPG, PNG e WebP são aceitos, com checagem de assinatura. Temas do catálogo têm identificadores únicos, nome, descrição e foto raster opcional; validam duplicações e preservam isolamento por empresa na mesma operação versionada do catálogo. O armazenamento de referências usa o banco persistente do Railway e não exige volume na aplicação. Para grandes volumes de mídia, a mesma interface pode futuramente usar armazenamento de objetos.
