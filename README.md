@@ -60,9 +60,11 @@ Para criar Doce Ateliê com quatro pedidos fictícios no banco local, defina DEM
 - `/admin`: administrador da plataforma e revendas. Sessão e cookie separados; uma sessão administrativa não abre a gestão na raiz.
 - `/loja/slug`: montagem pública do pedido.
 
-Em `/admin`, clique em **Criar demonstração** para provisionar uma empresa separada **Maysa Lima · Demonstração**, com licença de 30 dias, credenciais geradas, quatro pedidos fictícios e o cardápio da imagem de 2026. Login, senha (exibida uma vez) e link da loja aparecem na confirmação. Cada criação gera uma instância independente, sem alterar clientes existentes.
+Em `/admin`, clique em **Criar demonstração** para provisionar uma empresa separada **Maysa Lima · Demonstração**, com licença permanente, credenciais geradas, quatro pedidos fictícios e o cardápio da imagem de 2026. Login, senha (exibida uma vez) e link da loja aparecem na confirmação. Cada criação gera uma instância independente, sem alterar clientes existentes.
 
 Cardápio demonstrativo: 10 cm/4 fatias/R$ 80; 12 cm/6/R$ 100; 15 cm/12/R$ 140; 20 cm/22/R$ 190; 25 cm/35/R$ 260; 30 cm/52/R$ 360; 35 cm/76/R$ 490. Tradicionais: Brigadeiro, Ninho e Coco. Especiais: Nutella, Morango, Maracujá, Abacaxi, Nozes, Ameixa, Pêssego e Doce de leite, com mínimos de R$ 15 por opção para a apresentação. Andar adicional: R$ 20. Topo não incluso e sem valor informado, portanto não oferecido com preço automático. Sem acréscimo por quantidade nesta configuração, pois a imagem não define uma regra. Limite técnico de seleção: seis recheios.
 
 Pedidos com recheios especiais mostram total estimado e mensagem de confirmação do valor final, porque o cardápio diz “a partir de”. Todos esses adicionais e comportamentos são editáveis em Preços. O número 99873-6335 é apresentado como contato; o WhatsApp permanece sem configuração até informar país e DDD. Nenhum DDD foi inferido. A imagem original não integra a publicação no GitHub; somente os dados de cardápio foram cadastrados.
 
+
+Demonstrações criadas por `demo.created` são convertidas para licença permanente pela migração única `permanent-demo-v1`. São preservados dados, login, senha, slug e status. A validade interna `9999-12-31` representa licença sem vencimento e aparece como Permanente no painel; ainda é possível suspender ou desativar a licença. A opção é editável no cadastro da empresa.
