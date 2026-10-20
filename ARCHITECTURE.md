@@ -33,3 +33,6 @@ A gestão global e as revendas autenticam em `/admin` e `/api/admin/login`, com 
 O endpoint administrativo POST `/api/platform/demo` cria uma empresa demonstrativa Maysa Lima separada, sem sobrescrever empresas existentes. Somente administrador global. Credencial é aleatória e retornada uma única vez; banco armazena apenas hash. Dados demonstrativos são pedidos sintéticos com o catálogo do material fornecido pelo usuário, não registros reais do negócio.
 
 Demonstrações criadas por `demo.created` são convertidas para licença permanente pela migração única `permanent-demo-v1`. São preservados dados, login, senha, slug e status. A validade interna `9999-12-31` representa licença sem vencimento e aparece como Permanente no painel; ainda é possível suspender ou desativar a licença. A opção é editável no cadastro da empresa.
+
+## Identidade por portal
+A unicidade do e-mail é aplicada por índices parciais: um para contas tenant e outro para contas admin/reseller. A autenticação inclui o papel correspondente ao portal na consulta. Assim, um e-mail pode representar uma conta de empresa e uma de revenda, com hashes e sessões independentes. A migração scoped-email-v1 preserva registros e sessões na conversão de bancos antigos; não mescla contas nem concede acesso adicional a empresas.

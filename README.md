@@ -68,3 +68,6 @@ Pedidos com recheios especiais mostram total estimado e mensagem de confirmaçã
 
 
 Demonstrações criadas por `demo.created` são convertidas para licença permanente pela migração única `permanent-demo-v1`. São preservados dados, login, senha, slug e status. A validade interna `9999-12-31` representa licença sem vencimento e aparece como Permanente no painel; ainda é possível suspender ou desativar a licença. A opção é editável no cadastro da empresa.
+
+## E-mail compartilhado entre empresa e revenda
+O mesmo e-mail pode ser cadastrado no estabelecimento (`/`) e em uma revenda (`/admin`). São contas independentes; cada uma tem sua própria senha, sessão e permissões. O e-mail continua único dentro de cada portal: não pode identificar duas empresas distintas na raiz nem duas contas de gestão em `/admin`. A migração `scoped-email-v1` remove a restrição global antiga e preserva usuários, hashes, vínculos e sessões existentes. O login consulta apenas as contas do portal acessado.
