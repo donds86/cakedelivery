@@ -1,0 +1,17 @@
+{
+  "name": "cake-delivery",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cake Delivery: encomendas multiempresa e licenciamento para revendas",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server.cjs",
+    "test": "node --test tests/*.test.cjs",
+    "seed:demo": "node --env-file-if-exists=.env seed-demo.cjs"
+  },
+  "dependencies": {
+    "pg": "^8.16.3"
+  }
+}

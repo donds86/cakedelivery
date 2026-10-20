@@ -1,36 +1,28 @@
-# Cake Delivery — arquitetura proposta para implementação
+# Arquitetura implementada
 
-## Escopo desta entrega
-Mockup navegável, sem backend. O painel Gestão SaaS demonstra administração da plataforma, revendas, empresas e licenças. Cada empresa carrega um conjunto independente de dados do localStorage. Os perfis são selecionáveis para revisão do produto, sem autenticação. Isso não é isolamento de segurança.
+## Runtime e persistência
+Servidor Node.js 24, sem framework HTTP. PostgreSQL via driver pg em produção; SQLite nativo apenas para desenvolvimento e testes. Toda consulta parametrizada. Migrações transacionais na inicialização. O frontend usa API same-origin, sem persistência de dados ou sessão em localStorage.
 
-## Papéis e regras propostas
-- Administrador da plataforma: cadastra revendas, empresas e licenças; pode vincular empresas a uma revenda.
-- Revenda: cadastra clientes e administra somente suas empresas e licenças. A permissão para ativar/desativar foi adotada para a demonstração e pode ser ajustada no produto.
-- Administrador da confeitaria: gerencia seus produtos, tamanhos, preços, clientes e pedidos.
-- Cliente final: acessa a loja pública da empresa, monta o bolo e solicita a encomenda.
-- Uma empresa representa um tenant. Uma revenda pode possuir várias empresas vinculadas. Clientes diretos são administrados pela plataforma.
-- Licença ativa e dentro da validade permite operação; licença inativa, suspensa ou vencida bloqueia novas encomendas. A administração global permanece acessível. Planos são rótulos nesta fase, sem cobrança ou limites implementados.
+## Identidade e autorização
+- users: e-mail único, hash de senha scrypt com salt aleatório e papel admin, reseller ou tenant.
+- O administrador global gerencia todas as revendas e empresas. A revenda só gerencia suas empresas. A conta de confeitaria só opera o próprio tenant.
+- Vínculos e perfil são recuperados do banco em cada requisição, sem confiar em perfil, tenant_id ou reseller_id fornecidos pelo navegador.
+- sessions: apenas SHA-256 do token aleatório de 256 bits é armazenado no banco. Cookie HttpOnly, SameSite=Lax, Secure em produção, validade de 8 horas.
+- Operações de escrita exigem Origin igual à URL configurada. Endpoints JSON rejeitam formulários cross-origin. Sem CORS permissivo.
+- Limites de tentativas e pedidos compartilhados no banco; cabeçalhos de segurança e lista explícita de arquivos públicos. Requisições limitadas a 8 MB.
 
-## Estrutura de dados sugerida
-| Entidade | Escopo e vínculo |
-| --- | --- |
-| users | Identidade autenticada |
-| resellers | Revenda |
-| reseller_memberships | Usuário + revenda + papel |
-| tenants | Empresa + reseller_id opcional + slug público único |
-| tenant_memberships | Usuário + tenant_id + papel |
-| licenses | tenant_id + plano + status + validade |
-| products / sizes / price_rules | tenant_id obrigatório |
-| customers / orders / order_items | tenant_id obrigatório |
-| audit_events | Ator, escopo, ação, valores anteriores e novos |
+## Multi tenancy
+Todas as operações de catálogo e pedidos são autorizadas no servidor e vinculadas ao tenant. Não há acesso a pedidos por ID sem incluir e autorizar o tenant. A loja pública resolve o tenant pelo slug único e entrega apenas dados públicos do catálogo, sem lista de pedidos ou contatos administrativos. O banco usa chaves estrangeiras para vínculos. O isolamento é aplicado na camada de serviço; não depende de um seletor na interface e não usa RLS nesta versão.
 
-## Requisitos de segurança para o backend
-Resolver a empresa pelo slug público ou contexto autenticado; validar a associação no servidor. Nunca confiar em tenant_id, perfil ou preço enviado pelo navegador. Aplicar filtros por tenant_id em todas as operações e políticas de isolamento no banco. Relacionamentos entre pedidos, produtos e clientes devem garantir o mesmo tenant. Arquivos devem possuir prefixo por tenant e autorização de acesso. Revendas só podem atuar nas empresas sob seu vínculo. Administradores globais exigem autorização explícita e auditoria, especialmente ao acessar uma empresa.
+Tabelas: resellers, tenants, users, sessions, tenant_data, orders, audit_events, rate_limits.
+Catálogos são documentos JSON versionados por empresa dentro de tenant_data. Fotos raster são validadas e armazenadas no catálogo no banco (até 2 MB cada, sujeito ao limite total de 8 MB por atualização). Pedidos e status têm registros próprios; salvar o catálogo nunca sobrescreve pedidos.
 
-Verificar status e validade da licença no servidor em cada operação protegida, incluindo API pública de encomendas. Definir fuso da validade e regra de expiração. Calcular o valor final no servidor a partir da tabela vigente e salvar um snapshot dos valores no pedido. Registrar o pedido no banco antes de abrir o WhatsApp. Não tratar a abertura do WhatsApp como confirmação do envio ou aceite da encomenda.
+## Licenças e pedidos
+Status ativo e validade igual ou superior ao dia atual em America/Sao_Paulo são obrigatórios para acessar catálogo privado ou criar encomendas. Gerenciamento de licenças continua disponível ao administrador e revenda. No PostgreSQL, alterações de catálogo/licença e criação de pedido bloqueiam a linha do tenant dentro de transação para coordenar a validação e gravação.
 
-Implementar testes de acesso cruzado entre tenants e revendas, tentativas de alterar contexto, licenças expiradas e manipulação de preço. O servidor estático atual é apenas de desenvolvimento local; não deve ser usado como backend de produção.
+Valores finais são calculados no servidor em centavos. Cada pedido guarda snapshot de produto, tamanho, recheios, adicionais, data e valor. Versionamento otimista bloqueia a sobrescrita de catálogo alterado por outro usuário. A loja exige a versão atual antes de aceitar um novo pedido. Chave idempotente impede duplicação durante tentativas repetidas de envio. Pedido é registrado como Novo; abertura do WhatsApp não representa envio, pagamento ou aceite.
 
-## Repositório
-Repositório informado: https://github.com/donds86/cakedelivery
-Branch inicial solicitada: dev. A branch main não é criada nesta entrega.
+## Operação e limites
+Dashboard calcula indicadores e gráfico com pedidos do banco; total vendido representa encomendas criadas, sem controle financeiro de recebimentos. Atualizar no painel recarrega os pedidos; atualização em tempo real por push não está implementada. Plano é uma classificação, sem gateway de cobrança. Recuperação de senha é administrativa e não por e-mail. Uma conta de acesso por confeitaria e uma por revenda na interface atual. Página de auditoria lista as últimas 100 ações do servidor para administrador global.
+
+Servidor está preparado para proxy HTTPS Railway, com PostgreSQL compartilhado entre instâncias. Certificados do banco usam o comportamento padrão do driver/connection string, sem desativação global de validação TLS. Domínio público deve corresponder a PUBLIC_URL. Configure política de backups e monitore tamanho dos catálogos. O modo SQLite não é permitido em produção. As credenciais e o deploy do Railway são gerenciados no ambiente de hospedagem, não no Git.

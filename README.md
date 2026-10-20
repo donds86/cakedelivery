@@ -1,23 +1,55 @@
-# Doce Ateliê — mockup navegável
+# Cake Delivery
 
-Abra http://127.0.0.1:4173 com o servidor iniciado por `node server.cjs` nesta pasta.
+Sistema de encomendas com servidor Node.js 24, PostgreSQL, login e três perfis: administrador global, revenda e confeitaria. A loja pública usa um wizard de seis etapas e grava o pedido no banco antes de abrir a mensagem do WhatsApp.
 
-Protótipo em português com painel (Dashboard, Pedidos, Produtos, Preços, Clientes) e loja de montagem de bolos. Layout responsivo, ilustrações vetoriais próprias e marca demonstrativa inspirada na paleta das referências.
+## Desenvolvimento local
 
-## Testar
-- Em Preços, ajuste tamanhos e adicionais e salve. Cadastre o WhatsApp com país e DDD, só números.
-- Em Produtos, cadastre ou edite bolos e adicione fotos de até 2 MB.
-- Abra Ver loja do cliente e personalize o bolo. O total muda imediatamente.
-- Preencha nome e data. O botão registra a encomenda local e abre o WhatsApp com a mensagem pronta; o cliente precisa confirmar o envio.
-- Volte ao painel para ver a encomenda e mudar o status.
+1. Instale Node.js 24 ou superior e execute `npm ci`.
+2. Copie `.env.example` para `.env`. Defina `ADMIN_EMAIL` e uma `ADMIN_PASSWORD` exclusiva com no mínimo 12 caracteres.
+3. Execute `npm start` e abra `http://localhost:4173/login` (ou o endereço definido em PUBLIC_URL).
+4. Sem DATABASE_URL, o desenvolvimento utiliza SQLite persistente em `data/development.sqlite`. Nunca use esse modo para o deploy.
 
-Os dados ficam apenas no localStorage deste navegador. Não há backend, autenticação, sincronização entre dispositivos, pagamento ou confirmação real de entrega da mensagem. O gráfico semanal é ilustrativo; os indicadores são calculados com os pedidos locais. Total vendido hoje representa encomendas criadas hoje, sem controle de pagamento. Cada andar adicional tem preço fixo na proposta. O preço base do produto usa o tamanho inicial de referência de R$ 65; a diferença é aplicada aos demais tamanhos.
+O primeiro administrador é criado no banco no primeiro início. Nas próximas inicializações, as variáveis não alteram sua senha. Use Minha senha no painel. Não há credenciais padrão nem contas demonstrativas criadas automaticamente em produção.
 
-Para produção: definir regras de andares e rendimentos, implementar banco de dados, autenticação administrativa, upload de fotos, registro compartilhado e fluxo de confirmação de encomendas. Publicar a loja e proteger o painel.
+## Deploy no Railway
 
-Verificação: `node verify.cjs` confere cálculos, atualização dos preços, renderização das telas e mudança de status. `node --check app.js` verifica sintaxe. HTTP local verificado com resposta 200. Layout não foi inspecionado visualmente em navegador automatizado nesta entrega.
+Conecte o repositório `donds86/cakedelivery`, branch `dev`, e adicione um serviço PostgreSQL. O projeto inclui `railway.json`, Dockerfile e comando `npm start`.
 
-## Gestão SaaS e revendas
-Clique em Gestão SaaS no painel da confeitaria. A administração possui Visão geral, Empresas, Licenças e Revendas. Use Simular visão para revisar a área de uma revenda. Cadastre clientes, associe revendas, altere planos, validade e status das licenças. Abrir painel troca a empresa ativa e carrega seus dados locais. Empresas novas iniciam sem pedidos; licenças inativas ou vencidas bloqueiam a loja na demonstração.
+Variáveis do serviço da aplicação:
 
-A separação local de dados serve para revisar o comportamento multiempresa. Não é uma implementação segura de multi tenancy. Veja ARCHITECTURE.md para papéis, modelo de dados e requisitos de isolamento no backend. A loja continua usando o wizard de seis etapas.
+| Variável | Valor |
+| --- | --- |
+| NODE_ENV | production |
+| DATABASE_URL | Referência à DATABASE_URL do serviço PostgreSQL, por exemplo `${{Postgres.DATABASE_URL}}` |
+| PUBLIC_URL | URL HTTPS final da aplicação, sem caminho; exemplo `https://cake.up.railway.app` |
+| ADMIN_EMAIL | Seu e-mail para o primeiro administrador |
+| ADMIN_PASSWORD | Senha exclusiva de 12 a 128 caracteres para o primeiro administrador |
+
+O Railway injeta PORT automaticamente. O servidor escuta em `0.0.0.0`. Se PUBLIC_URL não estiver definido, usa `https://RAILWAY_PUBLIC_DOMAIN` quando disponível. Produção recusa inicializar sem PostgreSQL ou sem URL HTTPS. Para o primeiro deploy, gere o domínio público nas configurações de rede antes de concluir o início do serviço. Configure backups do PostgreSQL no ambiente de hospedagem.
+
+As migrações idempotentes são aplicadas na inicialização. O healthcheck `/health` verifica a conexão com o banco. Não há dados persistidos no disco da aplicação em produção: catálogo, fotos, pedidos, contas, sessões e auditoria ficam no PostgreSQL.
+
+## Primeiro uso
+
+- Entre em `/login` com ADMIN_EMAIL e ADMIN_PASSWORD.
+- Cadastre revendas com e-mail e senha de acesso. Somente o administrador global gerencia revendas.
+- Cadastre uma empresa, responsável, e-mail, senha, link da loja, plano e validade. A revenda só cadastra e administra empresas vinculadas a ela.
+- Abra o painel da empresa e configure catálogo, preços, adicionais e WhatsApp com país e DDD.
+- Compartilhe `/loja/slug-da-empresa` com os clientes. O painel do cliente da confeitaria usa o mesmo `/login`.
+- O botão final registra a encomenda e abre o WhatsApp com a mensagem pronta. Se o navegador bloquear a janela, o comprovante mostra um link para abrir o WhatsApp. O envio da mensagem e a disponibilidade dependem da confirmação das pessoas.
+- Licenças inativas, suspensas ou vencidas bloqueiam a API e a loja, mas a gestão continua acessível para regularização.
+- A senha pode ser alterada pelo usuário; o gestor pode redefinir a senha ao editar uma empresa/revenda. Não há recuperação automática por e-mail nesta versão.
+
+## Regras de preço
+
+Preço do tamanho + diferença do preço base do produto em relação a R$ 65 + recheios extras + adicional fixo por andar + topo. O backend valida preços não negativos, recalcula em centavos e salva os valores no pedido. Até três andares e seis recheios. Planos Essencial e Profissional são classificações comerciais; cobrança e restrições por plano não estão implementadas.
+
+## Verificação
+
+`npm test` executa testes de integração HTTP com banco real SQLite em arquivo temporário. `TEST_DATABASE_URL` executa a mesma suíte com PostgreSQL. O GitHub Actions configura PostgreSQL 17 e testa os dois modos. Testes cobrem autenticação, isolamento entre empresas/revendas, licenças, preços adulterados, concorrência de catálogo, duplicação de pedido, persistência, auditoria e logout.
+
+Veja `ARCHITECTURE.md` para o modelo de dados e limites operacionais. Os dados do antigo mockup no navegador não são importados automaticamente para o servidor.
+
+## Empresa demonstrativa local
+
+Para criar Doce Ateliê com quatro pedidos fictícios no banco local, defina DEMO_PASSWORD (mínimo 12 caracteres) e execute `npm run seed:demo`. O acesso será `demo@cakedelivery.local`, com a senha que você definiu. O script é bloqueado em produção e quando DATABASE_URL está configurada; não sobrescreve uma empresa já existente. A loja fica em `/loja/doce-atelie`; configure o WhatsApp antes de enviar encomendas.
