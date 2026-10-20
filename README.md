@@ -1,6 +1,6 @@
 # Cake Delivery
 
-Sistema de encomendas com servidor Node.js 24, PostgreSQL, login e três perfis: administrador global, revenda e confeitaria. A loja pública usa um wizard de seis etapas e grava o pedido no banco antes de abrir a mensagem do WhatsApp.
+Sistema de encomendas com servidor Node.js 24, PostgreSQL, login e três perfis: administrador global, revenda e confeitaria. A loja pública usa um wizard de sete etapas e grava o pedido no banco antes de abrir a mensagem do WhatsApp.
 
 ## Desenvolvimento local
 
@@ -71,3 +71,6 @@ Demonstrações criadas por `demo.created` são convertidas para licença perman
 
 ## E-mail compartilhado entre empresa e revenda
 O mesmo e-mail pode ser cadastrado no estabelecimento (`/`) e em uma revenda (`/admin`). São contas independentes; cada uma tem sua própria senha, sessão e permissões. O e-mail continua único dentro de cada portal: não pode identificar duas empresas distintas na raiz nem duas contas de gestão em `/admin`. A migração `scoped-email-v1` remove a restrição global antiga e preserva usuários, hashes, vínculos e sessões existentes. O login consulta apenas as contas do portal acessado.
+
+A montagem inclui Tema logo após Recheios, com opções prontas, sem tema ou personalizado. O tema é salvo no pedido e enviado no WhatsApp; não altera automaticamente o preço. A navegação Voltar/Continuar e a finalização ficam após o resumo, no computador e no celular.
+

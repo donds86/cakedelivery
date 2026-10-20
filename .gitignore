@@ -10,3 +10,4 @@ data/
 *.sqlite-wal
 .demo-access.json
 assets/maysa-cardapio-2026.jpeg
+.codex-remote-attachments/
