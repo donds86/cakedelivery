@@ -9,6 +9,6 @@ run('publicStore=true;shop=true;renderShop()');assert(nodes['#app'].innerHTML.in
 run('wizardNext();wizardNext();build.fill=[];wizardNext()');assert.equal(run('wizardStep'),2);
 run("build.fill=['Brigadeiro'];wizardNext();wizardNext();build.name='Cliente';build.delivery='2099-01-01';wizardNext()");assert(nodes['#app'].innerHTML.includes('Fazer pedido pelo WhatsApp'));validateHandlers();
 await run('sendOrder({preventDefault(){}})');assert(nodes['#app'].innerHTML.includes('PEDIDO REGISTRADO'));assert(calls.some(c=>c.url.endsWith('/orders')));assert.equal(opens.length,1);
-run("publicStore=false;sessionUser={role:'admin',name:'Administrador'};platformView=true;render()");assert(nodes['#app'].innerHTML.includes('Cadastrar cliente'));assert(!nodes['#app'].innerHTML.includes('Simular visão'));validateHandlers();
+run("location.pathname='/admin';publicStore=false;sessionUser={role:'admin',name:'Administrador'};platformView=true;render()");assert(nodes['#app'].innerHTML.includes('Cadastrar cliente'));assert(!nodes['#app'].innerHTML.includes('Simular visão'));validateHandlers();
 });
 

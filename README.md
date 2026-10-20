@@ -31,11 +31,11 @@ As migrações idempotentes são aplicadas na inicialização. O healthcheck `/h
 
 ## Primeiro uso
 
-- Entre em `/login` com ADMIN_EMAIL e ADMIN_PASSWORD.
+- Entre em `/admin` com ADMIN_EMAIL e ADMIN_PASSWORD.
 - Cadastre revendas com e-mail e senha de acesso. Somente o administrador global gerencia revendas.
 - Cadastre uma empresa, responsável, e-mail, senha, link da loja, plano e validade. A revenda só cadastra e administra empresas vinculadas a ela.
 - Abra o painel da empresa e configure catálogo, preços, adicionais e WhatsApp com país e DDD.
-- Compartilhe `/loja/slug-da-empresa` com os clientes. O painel do cliente da confeitaria usa o mesmo `/login`.
+- Compartilhe `/loja/slug-da-empresa` com os clientes. O estabelecimento entra em `/` (ou `/login`), com a conta da própria empresa.
 - O botão final registra a encomenda e abre o WhatsApp com a mensagem pronta. Se o navegador bloquear a janela, o comprovante mostra um link para abrir o WhatsApp. O envio da mensagem e a disponibilidade dependem da confirmação das pessoas.
 - Licenças inativas, suspensas ou vencidas bloqueiam a API e a loja, mas a gestão continua acessível para regularização.
 - A senha pode ser alterada pelo usuário; o gestor pode redefinir a senha ao editar uma empresa/revenda. Não há recuperação automática por e-mail nesta versão.
@@ -53,3 +53,16 @@ Veja `ARCHITECTURE.md` para o modelo de dados e limites operacionais. Os dados d
 ## Empresa demonstrativa local
 
 Para criar Doce Ateliê com quatro pedidos fictícios no banco local, defina DEMO_PASSWORD (mínimo 12 caracteres) e execute `npm run seed:demo`. O acesso será `demo@cakedelivery.local`, com a senha que você definiu. O script é bloqueado em produção e quando DATABASE_URL está configurada; não sobrescreve uma empresa já existente. A loja fica em `/loja/doce-atelie`; configure o WhatsApp antes de enviar encomendas.
+
+## Acessos separados e demonstração para leads
+
+- `/`: acesso exclusivo do estabelecimento. `/login` permanece como endereço alternativo.
+- `/admin`: administrador da plataforma e revendas. Sessão e cookie separados; uma sessão administrativa não abre a gestão na raiz.
+- `/loja/slug`: montagem pública do pedido.
+
+Em `/admin`, clique em **Criar demonstração** para provisionar uma empresa separada **Maysa Lima · Demonstração**, com licença de 30 dias, credenciais geradas, quatro pedidos fictícios e o cardápio da imagem de 2026. Login, senha (exibida uma vez) e link da loja aparecem na confirmação. Cada criação gera uma instância independente, sem alterar clientes existentes.
+
+Cardápio demonstrativo: 10 cm/4 fatias/R$ 80; 12 cm/6/R$ 100; 15 cm/12/R$ 140; 20 cm/22/R$ 190; 25 cm/35/R$ 260; 30 cm/52/R$ 360; 35 cm/76/R$ 490. Tradicionais: Brigadeiro, Ninho e Coco. Especiais: Nutella, Morango, Maracujá, Abacaxi, Nozes, Ameixa, Pêssego e Doce de leite, com mínimos de R$ 15 por opção para a apresentação. Andar adicional: R$ 20. Topo não incluso e sem valor informado, portanto não oferecido com preço automático. Sem acréscimo por quantidade nesta configuração, pois a imagem não define uma regra. Limite técnico de seleção: seis recheios.
+
+Pedidos com recheios especiais mostram total estimado e mensagem de confirmação do valor final, porque o cardápio diz “a partir de”. Todos esses adicionais e comportamentos são editáveis em Preços. O número 99873-6335 é apresentado como contato; o WhatsApp permanece sem configuração até informar país e DDD. Nenhum DDD foi inferido. A imagem original não integra a publicação no GitHub; somente os dados de cardápio foram cadastrados.
+
