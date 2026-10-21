@@ -82,3 +82,24 @@ No painel da confeitaria, o menu **Temas** permite cadastrar, editar e excluir o
 O cliente pode anexar uma imagem opcional na etapa Tema: JPG, PNG ou WebP, até 2 MB, com prévia e remoção. Uma imagem também pode descrever um tema personalizado sem texto adicional. O backend valida formato, assinatura e tamanho. A referência é gravada em order_references, vinculada ao pedido e à empresa no PostgreSQL; não é salva no disco temporário do serviço Railway nem retornada na listagem de pedidos. Os detalhes do pedido carregam a imagem em um endpoint autenticado e autorizado pelo tenant. Permanece após reinício/deploy, junto aos demais dados do banco.
 
 Fotos de temas fazem parte do catálogo público. A imagem anexada pelo comprador pertence ao pedido privado. O WhatsApp recebe somente o texto indicando a existência de uma referência no sistema; o link wa.me não anexa arquivos automaticamente. Para enviar também na conversa, o cliente deve anexar a imagem manualmente. Não há nova variável de ambiente para este armazenamento, que usa DATABASE_URL já configurada. O limite total de atualização do catálogo continua em 8 MB.
+
+## Personalização e fotos
+
+No painel do estabelecimento, **Personalização** controla nome público, logomarca, imagem de topo, cor, título, subtítulo, aviso do cardápio, Instagram, contato e rodapé. O WhatsApp foi movido de Preços para esse menu. Logos e fotos de topo ficam no banco dentro do catálogo versionado da empresa. Fotos de produtos/temas/topo são reduzidas no navegador, mantendo a proporção (originais de até 20 MB; saída normalmente abaixo de 700 KB). O servidor continua validando os arquivos e o limite de 8 MB por atualização do catálogo. Cartões e resumo possuem regiões de imagem de tamanho fixo com object-fit, sem avançar sobre textos ou botões.
+
+## Ficha técnica e estoque
+
+1. Em **Estoque**, cadastre os insumos e a unidade base: g, ml ou un. Informe saldo inicial, estoque mínimo e custo por unidade base.
+2. Registre compras/entradas e saídas/perdas com motivo. As quantidades aceitam até três casas decimais. Use sempre a unidade base: 1 kg = 1.000 g.
+3. Em **Ficha técnica**, cadastre a composição por produto e tamanho. Opcionalmente, adicione fichas de recheios por tamanho; elas serão somadas à base conforme a escolha do cliente. Cada ficha representa um andar; o consumo é multiplicado pela quantidade de andares. O custo calculado corresponde apenas aos insumos, sem mão de obra, impostos ou despesas gerais.
+4. Pedidos novos capturam os insumos das fichas existentes. Ao aceitar, o consumo é reservado, sem reduzir o saldo físico. Em Produção ou Entregue dá baixa uma única vez. Cancelado libera a reserva e estorna uma baixa existente, também uma única vez. Voltar de um status produzido para Novo/Aceito reverte a baixa; haverá nova baixa se retornar à produção.
+5. Produção é bloqueada se os insumos mapeados forem insuficientes, respeitando as reservas de outros pedidos aceitos. Pedidos sem ficha de base são sinalizados, mas permanecem operáveis. A previsão pode estar incompleta até cadastrar as fichas. Pedidos ainda sem ficha completa capturam novamente ao mudar de Novo/Aceito/Cancelado para um status ativo; pedidos já mapeados preservam o snapshot mesmo após editar ou excluir uma ficha.
+6. Selecione o mês em Estoque para ver demanda, disponível, falta prevista e data da primeira falta, além da previsão por data de entrega. Ela considera pedidos Novo/Aceito, saldo atual e reservas de outros meses. Compras futuras não registradas não são consideradas.
+
+## Acompanhamento do pedido
+
+Novas mensagens WhatsApp incluem um link `/pedido/token-aleatorio`. A página mostra status, bolo, tamanho, tema, entrega e valor, sem nome, observações ou anexos. O link funciona sem login e deve ser compartilhado apenas com o cliente. O botão Atualizar consulta o status atual. Cancelado aparece explicitamente. Pedidos antigos recebem um token na inicialização e seu link aparece nos detalhes do pedido no painel; mensagens WhatsApp já enviadas não podem ser alteradas retroativamente.
+
+## Revenda responsável
+
+No `/admin`, **Vincular revenda** permite atribuir a empresa à revenda correta. Criar demonstração também oferece a seleção da revenda. Para a solicitação Maysa/Gledson, uma migração auditada vincula automaticamente a única Maysa demonstrativa ainda sem revenda à única revenda com Gledson no nome. Ela preserva os acessos, não modifica empresas já vinculadas e não escolhe entre múltiplas correspondências. Se houver ambiguidade, selecione explicitamente a revenda no painel global.

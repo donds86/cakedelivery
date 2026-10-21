@@ -3,7 +3,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev --ignore-scripts
 COPY backend ./backend
-COPY server.cjs index.html style.css app.js platform.js tenancy.js client.js ./
+COPY server.cjs index.html style.css app.js platform.js tenancy.js client.js operations.js ./
 ENV NODE_ENV=production
 USER node
 CMD ["npm", "start"]
