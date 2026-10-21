@@ -103,3 +103,16 @@ Novas mensagens WhatsApp incluem um link `/pedido/token-aleatorio`. A página mo
 ## Revenda responsável
 
 No `/admin`, **Vincular revenda** permite atribuir a empresa à revenda correta. Criar demonstração também oferece a seleção da revenda. Para a solicitação Maysa/Gledson, uma migração auditada vincula automaticamente a única Maysa demonstrativa ainda sem revenda à única revenda com Gledson no nome. Ela preserva os acessos, não modifica empresas já vinculadas e não escolhe entre múltiplas correspondências. Se houver ambiguidade, selecione explicitamente a revenda no painel global.
+# Encomendas em diferentes segmentos
+
+A loja pública agora começa por um catálogo e permite vários itens no mesmo carrinho. Cada item possui sua própria configuração; a data, o horário solicitado e o contato são comuns à encomenda. O carrinho fica na sessão da página e é registrado no servidor ao finalizar. Atualizar/fechar a página antes da finalização limpa o carrinho.
+
+- **Produtos → Perguntas e regras:** modelos bolo, produto simples, doces por lote e personalizado. Perguntas de texto ou seleção, obrigatórias ou opcionais. Tamanhos e preços próprios, instruções, antecedência e condições de pagamento por produto.
+- **Doces:** configure, por exemplo, lote de 100, até quatro sabores e mínimo/múltiplo de 25 por sabor. A distribuição é por lote; dois lotes multiplicam a distribuição. Para distribuições distintas, adicione o mesmo produto outra vez.
+- **Tortas e personalizados:** tamanhos próprios (P/M/G, rendimento e preço) e perguntas como sabor, cor ou texto da estampa. Não precisam responder às etapas do bolo.
+- **Personalização:** identidade visual, textos do topo, segmento, antecedência geral, pagamento e mensagens por status. A maior antecedência entre a loja e os itens determina a primeira data disponível, em dias corridos. O horário solicitado depende da confirmação do estabelecimento; não há bloqueio de capacidade por faixa horária.
+- **Agenda:** calendário mensal com filtro de status, seleção de dia e lista ordenada por horário. **Kanban:** Novo, Aceito, Em Produção, Finalizado, Entregue e Cancelado, com mudança pela seleção de etapa.
+- **Notificações:** ao atualizar o status, o painel prepara um link de WhatsApp com a mensagem configurada e o número informado pelo cliente. O operador precisa abrir o link e enviar. Não há integração contratada com API de WhatsApp nem disparo automático em segundo plano. O acompanhamento público reflete o status salvo e possui botão de atualização.
+- **Estoque:** ficha por unidade/lote nos produtos simples e por tamanho/andar nos bolos. Quantidades dos vários itens são somadas; Finalizado mantém a baixa da produção, e o cancelamento estorna uma vez. A imagem de referência é única para a encomenda e fica privada no painel.
+
+Os pedidos antigos continuam acessíveis. A migração `commerce-v1` amplia os status e preserva materiais, anexos e links de acompanhamento. O total e todas as escolhas são validados no servidor; os preços enviados pelo navegador não são usados.
