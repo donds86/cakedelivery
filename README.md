@@ -1,6 +1,6 @@
 # EncomendAki
 
-Sistema de encomendas com servidor Node.js 24, PostgreSQL, login e três perfis: administrador global, revenda e confeitaria. A loja pública usa um wizard de sete etapas e grava o pedido no banco antes de abrir a mensagem do WhatsApp.
+Sistema de encomendas com servidor Node.js 24, PostgreSQL, login e três perfis: administrador global, revenda e estabelecimento. A loja pública usa catálogo, carrinho e etapas por produto e grava o pedido no banco antes de abrir a mensagem do WhatsApp.
 
 ## Desenvolvimento local
 
@@ -34,7 +34,7 @@ As migrações idempotentes são aplicadas na inicialização. O healthcheck `/h
 - Entre em `/admin` com ADMIN_EMAIL e ADMIN_PASSWORD.
 - Cadastre revendas com e-mail e senha de acesso. Somente o administrador global gerencia revendas.
 - Cadastre uma empresa, responsável, e-mail, senha, link da loja, plano e validade. A revenda só cadastra e administra empresas vinculadas a ela.
-- Abra o painel da empresa e configure catálogo, preços, adicionais e WhatsApp com país e DDD.
+- Abra o painel da empresa e configure catálogo, preços, adicionais e WhatsApp com DDD e número (+55 fixo).
 - Compartilhe `/loja/slug-da-empresa` com os clientes. O estabelecimento entra em `/` (ou `/login`), com a conta da própria empresa.
 - O botão final registra a encomenda e abre o WhatsApp com a mensagem pronta. Se o navegador bloquear a janela, o comprovante mostra um link para abrir o WhatsApp. O envio da mensagem e a disponibilidade dependem da confirmação das pessoas.
 - Licenças inativas, suspensas ou vencidas bloqueiam a API e a loja, mas a gestão continua acessível para regularização.
@@ -42,7 +42,7 @@ As migrações idempotentes são aplicadas na inicialização. O healthcheck `/h
 
 ## Regras de preço
 
-Preço do tamanho + diferença do preço base do produto em relação a R$ 65 + recheios extras + adicional fixo por andar + topo. O backend valida preços não negativos, recalcula em centavos e salva os valores no pedido. Até três andares e seis recheios. Planos Essencial e Profissional são classificações comerciais; cobrança e restrições por plano não estão implementadas.
+Preço do tamanho + diferença do preço base do produto em relação a R$ 65 + recheios extras + adicional fixo por andar + topo. O backend valida preços não negativos, recalcula em centavos e salva os valores no pedido. Até três andares e seis recheios. O módulo Marketing é restrito ao plano Profissional, com bloqueio também na API; os demais recursos continuam disponíveis nos dois planos. Cobrança automática não está implementada.
 
 ## Verificação
 
@@ -111,8 +111,18 @@ A loja pública agora começa por um catálogo e permite vários itens no mesmo 
 - **Doces:** configure, por exemplo, lote de 100, até quatro sabores e mínimo/múltiplo de 25 por sabor. A distribuição é por lote; dois lotes multiplicam a distribuição. Para distribuições distintas, adicione o mesmo produto outra vez.
 - **Tortas e personalizados:** tamanhos próprios (P/M/G, rendimento e preço) e perguntas como sabor, cor ou texto da estampa. Não precisam responder às etapas do bolo.
 - **Personalização:** identidade visual, textos do topo, segmento, antecedência geral, pagamento e mensagens por status. A maior antecedência entre a loja e os itens determina a primeira data disponível, em dias corridos. O horário solicitado depende da confirmação do estabelecimento; não há bloqueio de capacidade por faixa horária.
-- **Agenda:** calendário mensal com filtro de status, seleção de dia e lista ordenada por horário. **Kanban:** Novo, Aceito, Em Produção, Finalizado, Entregue e Cancelado, com mudança pela seleção de etapa.
+- **Agenda:** calendário mensal com filtro de status, seleção de dia e lista ordenada por horário. **Pedidos → Lista / Kanban:** Novo, Aceito, Em Produção, Finalizado, Entregue e Cancelado, com mudança pela seleção de etapa.
 - **Notificações:** ao atualizar o status, o painel prepara um link de WhatsApp com a mensagem configurada e o número informado pelo cliente. O operador precisa abrir o link e enviar. Não há integração contratada com API de WhatsApp nem disparo automático em segundo plano. O acompanhamento público reflete o status salvo e possui botão de atualização.
 - **Estoque:** ficha por unidade/lote nos produtos simples e por tamanho/andar nos bolos. Quantidades dos vários itens são somadas; Finalizado mantém a baixa da produção, e o cancelamento estorna uma vez. A imagem de referência é única para a encomenda e fica privada no painel.
 
 Os pedidos antigos continuam acessíveis. A migração `commerce-v1` amplia os status e preserva materiais, anexos e links de acompanhamento. O total e todas as escolhas são validados no servidor; os preços enviados pelo navegador não são usados.
+
+## Relacionamento e operação
+
+- Pedidos concentra Lista e Kanban, com busca por nome ou código (com ou sem #), filtro compartilhado e atualização automática de 15 segundos. O acompanhamento público também consulta a cada 15 segundos em abas visíveis. O código e a loja estão visíveis para distinguir demonstrações diferentes.
+- Links novos de acompanhamento usam a origem pública validada da requisição, evitando um PUBLIC_URL antigo quando o serviço muda de domínio. Mensagens antigas já enviadas não são reescritas. Mantenha PUBLIC_URL atualizado.
+- No cadastro administrativo, segmento Festas e alimentação, Personalizados ou Outros define o catálogo de exemplo e o tema inicial. Em empresas existentes, mudar o segmento preserva produtos e imagens; a opção explícita de aplicar o padrão substitui apenas textos e cor. Personalização continua disponível ao estabelecimento.
+- Produtos → Perguntas e regras inclui complementos relacionados (até 12 por produto). A loja sugere itens ainda ausentes do carrinho antes da finalização, sem inclusão obrigatória nem alteração de preços. É recomendação manual do estabelecimento, não uma estatística de compras de outros clientes.
+- Marketing Pro oferece campanhas anuais do evento, datas fixas e clientes inativos. A antecedência é configurável. Apenas pedidos entregues e contatos com autorização explícita alimentam as campanhas. O checkout informa evento/data opcionais e consentimento desmarcado.
+- As mensagens são preparadas ao consultar o módulo; não há trabalhador de envio, API WhatsApp ou notificações agendadas fora do painel. O operador abre o WhatsApp e confirma manualmente o registro do envio. Registros impedem repetição por campanha/telefone/ocasião. A opção Não receber mais retira o contato das campanhas da loja. Não há contato automático com compras legadas sem consentimento.
+- WhatsApp é brasileiro, com +55 fixo na tela. O backend aceita DDD+número ou o número completo com +55 e normaliza o armazenamento. Temas habilitados nos bolos são obrigatórios no carrinho e na validação do servidor; Sem tema é uma escolha explícita.
