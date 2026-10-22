@@ -1,4 +1,4 @@
-# Cake Delivery
+# EncomendAki
 
 Sistema de encomendas com servidor Node.js 24, PostgreSQL, login e três perfis: administrador global, revenda e confeitaria. A loja pública usa um wizard de sete etapas e grava o pedido no banco antes de abrir a mensagem do WhatsApp.
 

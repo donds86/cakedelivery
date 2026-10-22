@@ -1,8 +1,8 @@
 {
-  "name": "cake-delivery",
+  "name": "encomendaki",
   "version": "1.0.0",
   "private": true,
-  "description": "Cake Delivery: encomendas multiempresa e licenciamento para revendas",
+  "description": "EncomendAki: encomendas multiempresa e licenciamento para revendas",
   "engines": {
     "node": ">=24"
   },
