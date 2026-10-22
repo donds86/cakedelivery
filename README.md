@@ -13,7 +13,7 @@ O primeiro administrador é criado no banco no primeiro início. Nas próximas i
 
 ## Deploy no Railway
 
-Conecte o repositório `donds86/cakedelivery`, branch `dev`, e adicione um serviço PostgreSQL. O projeto inclui `railway.json`, Dockerfile e comando `npm start`.
+Conecte o repositório `donds86/encomendaki`, branch `dev`, e adicione um serviço PostgreSQL. O projeto inclui `railway.json`, Dockerfile e comando `npm start`.
 
 Variáveis do serviço da aplicação:
 
